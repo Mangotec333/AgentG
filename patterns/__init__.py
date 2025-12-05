@@ -1,0 +1,2 @@
+"""Proprietary threat pattern library."""
+

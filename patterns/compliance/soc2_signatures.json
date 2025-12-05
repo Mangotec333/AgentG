@@ -1,0 +1,40 @@
+{
+  "patterns": [
+    {
+      "id": "SOC2-001",
+      "category": "soc2",
+      "pattern": "file_delete|system_shutdown",
+      "severity": "high",
+      "description": "Unauthorized tool activation (CC6.1)",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    },
+    {
+      "id": "SOC2-002",
+      "category": "soc2",
+      "pattern": "config|settings|permission",
+      "severity": "high",
+      "description": "Configuration change without audit (CC6.2)",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    },
+    {
+      "id": "SOC2-003",
+      "category": "soc2",
+      "pattern": "http://",
+      "severity": "medium",
+      "description": "Unencrypted data transfer (CC6.7)",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    }
+  ],
+  "version": "1.0.0",
+  "last_updated": "2024-01-01T00:00:00Z"
+}
+

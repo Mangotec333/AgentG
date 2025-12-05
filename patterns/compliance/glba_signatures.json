@@ -1,0 +1,51 @@
+{
+  "patterns": [
+    {
+      "id": "GLBA-001",
+      "category": "glba",
+      "pattern": "account|acct",
+      "severity": "high",
+      "description": "Financial account number detected",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    },
+    {
+      "id": "GLBA-002",
+      "category": "glba",
+      "pattern": "routing|ABA",
+      "severity": "high",
+      "description": "Bank routing number detected",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    },
+    {
+      "id": "GLBA-003",
+      "category": "glba",
+      "pattern": "EIN|TIN|tax\\s+id",
+      "severity": "medium",
+      "description": "Tax identification number detected",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    },
+    {
+      "id": "GLBA-004",
+      "category": "glba",
+      "pattern": "policy\\s+number",
+      "severity": "medium",
+      "description": "Insurance policy number detected",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    }
+  ],
+  "version": "1.0.0",
+  "last_updated": "2024-01-01T00:00:00Z"
+}
+

@@ -1,0 +1,51 @@
+{
+  "patterns": [
+    {
+      "id": "PCI-001",
+      "category": "pci",
+      "pattern": "^[0-9]{16}$",
+      "severity": "critical",
+      "description": "Potential PAN (Primary Account Number)",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    },
+    {
+      "id": "PCI-002",
+      "category": "pci",
+      "pattern": "CVV|CVC|CID|CVV2",
+      "severity": "critical",
+      "description": "Card verification value detected",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    },
+    {
+      "id": "PCI-003",
+      "category": "pci",
+      "pattern": "exp|expiry|expiration",
+      "severity": "high",
+      "description": "Card expiration date detected",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    },
+    {
+      "id": "PCI-004",
+      "category": "pci",
+      "pattern": "%[A-Z0-9]+\\^[A-Z0-9/]+",
+      "severity": "critical",
+      "description": "Track data detected",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    }
+  ],
+  "version": "1.0.0",
+  "last_updated": "2024-01-01T00:00:00Z"
+}
+

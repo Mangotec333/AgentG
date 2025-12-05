@@ -1,0 +1,51 @@
+{
+  "patterns": [
+    {
+      "id": "HIPAA-001",
+      "category": "hipaa",
+      "pattern": "medical_record_number",
+      "severity": "high",
+      "description": "PHI leakage: MRN detected in LLM output",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    },
+    {
+      "id": "HIPAA-002",
+      "category": "hipaa",
+      "pattern": "\\b\\d{3}-\\d{2}-\\d{4}\\b",
+      "severity": "high",
+      "description": "SSN detected in event",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    },
+    {
+      "id": "HIPAA-003",
+      "category": "hipaa",
+      "pattern": "ICD-?10|ICD-?9",
+      "severity": "medium",
+      "description": "Medical diagnosis code detected",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    },
+    {
+      "id": "HIPAA-004",
+      "category": "hipaa",
+      "pattern": "patient|subject",
+      "severity": "medium",
+      "description": "Patient identifier context",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    }
+  ],
+  "version": "1.0.0",
+  "last_updated": "2024-01-01T00:00:00Z"
+}
+
