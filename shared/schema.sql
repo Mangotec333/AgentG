@@ -1,5 +1,9 @@
 -- AI Workflow Shield Database Schema
 -- PostgreSQL schema for storing events, patterns, incidents, and risk scores
+-- Includes pgvector extension for RAG capabilities (semantic search)
+
+-- Enable pgvector extension (for vector embeddings and semantic search)
+CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Workspaces
 CREATE TABLE IF NOT EXISTS workspaces (
@@ -16,9 +20,10 @@ CREATE TABLE IF NOT EXISTS agents (
     name VARCHAR(255),
     version VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_seen_at TIMESTAMP,
-    INDEX idx_agents_workspace (workspace_id)
+    last_seen_at TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_agents_workspace ON agents(workspace_id);
 
 -- Events (raw telemetry)
 CREATE TABLE IF NOT EXISTS events (
@@ -33,13 +38,21 @@ CREATE TABLE IF NOT EXISTS events (
     risk_local INTEGER DEFAULT 0,
     risk_engine INTEGER,
     event_hash VARCHAR(64) UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_events_workspace (workspace_id),
-    INDEX idx_events_agent (agent_id),
-    INDEX idx_events_type (event_type),
-    INDEX idx_events_created (created_at),
-    INDEX idx_events_risk (risk_engine)
+    -- Vector embedding for semantic search (1536 dimensions for OpenAI, 768 for others)
+    embedding vector(1536),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_events_workspace ON events(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_events_agent ON events(agent_id);
+CREATE INDEX IF NOT EXISTS idx_events_type ON events(event_type);
+CREATE INDEX IF NOT EXISTS idx_events_created ON events(created_at);
+CREATE INDEX IF NOT EXISTS idx_events_risk ON events(risk_engine);
+
+-- Vector index for semantic similarity search on events
+CREATE INDEX IF NOT EXISTS idx_events_embedding ON events 
+USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100)
+WHERE embedding IS NOT NULL;
 
 -- Threat Patterns (proprietary signature library)
 CREATE TABLE IF NOT EXISTS patterns (
@@ -49,12 +62,20 @@ CREATE TABLE IF NOT EXISTS patterns (
     severity VARCHAR(20) NOT NULL,
     description TEXT,
     metadata JSONB,
+    -- Vector embedding for semantic pattern matching
+    embedding vector(1536),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    match_count INTEGER DEFAULT 0,
-    INDEX idx_patterns_category (category),
-    INDEX idx_patterns_severity (severity)
+    match_count INTEGER DEFAULT 0
 );
+
+CREATE INDEX IF NOT EXISTS idx_patterns_category ON patterns(category);
+CREATE INDEX IF NOT EXISTS idx_patterns_severity ON patterns(severity);
+
+-- Vector index for semantic pattern matching
+CREATE INDEX IF NOT EXISTS idx_patterns_embedding ON patterns 
+USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100)
+WHERE embedding IS NOT NULL;
 
 -- Pattern Matches (track which patterns matched which events)
 CREATE TABLE IF NOT EXISTS pattern_matches (
@@ -63,10 +84,11 @@ CREATE TABLE IF NOT EXISTS pattern_matches (
     pattern_id VARCHAR(50) NOT NULL REFERENCES patterns(id) ON DELETE CASCADE,
     matched_text TEXT,
     confidence FLOAT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_matches_event (event_id),
-    INDEX idx_matches_pattern (pattern_id)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_matches_event ON pattern_matches(event_id);
+CREATE INDEX IF NOT EXISTS idx_matches_pattern ON pattern_matches(pattern_id);
 
 -- Risk Scores (computed risk assessments)
 CREATE TABLE IF NOT EXISTS risk_scores (
@@ -78,10 +100,11 @@ CREATE TABLE IF NOT EXISTS risk_scores (
     compliance_risk INTEGER DEFAULT 0,
     total_risk INTEGER NOT NULL,
     model_details JSONB,
-    computed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_risk_event (event_id),
-    INDEX idx_risk_total (total_risk)
+    computed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_risk_event ON risk_scores(event_id);
+CREATE INDEX IF NOT EXISTS idx_risk_total ON risk_scores(total_risk);
 
 -- Incidents (triggered security events)
 CREATE TABLE IF NOT EXISTS incidents (
@@ -96,14 +119,22 @@ CREATE TABLE IF NOT EXISTS incidents (
     rca_summary TEXT,
     timeline JSONB,
     pdf_path VARCHAR(500),
+    -- Vector embedding for finding similar incidents
+    embedding vector(1536),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    resolved_at TIMESTAMP,
-    INDEX idx_incidents_workspace (workspace_id),
-    INDEX idx_incidents_status (status),
-    INDEX idx_incidents_severity (severity),
-    INDEX idx_incidents_created (created_at)
+    resolved_at TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_incidents_workspace ON incidents(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_incidents_status ON incidents(status);
+CREATE INDEX IF NOT EXISTS idx_incidents_severity ON incidents(severity);
+CREATE INDEX IF NOT EXISTS idx_incidents_created ON incidents(created_at);
+
+-- Vector index for semantic similarity search on incidents
+CREATE INDEX IF NOT EXISTS idx_incidents_embedding ON incidents 
+USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100)
+WHERE embedding IS NOT NULL;
 
 -- Incident Events (events associated with an incident)
 CREATE TABLE IF NOT EXISTS incident_events (
@@ -111,10 +142,11 @@ CREATE TABLE IF NOT EXISTS incident_events (
     incident_id VARCHAR(255) NOT NULL REFERENCES incidents(id) ON DELETE CASCADE,
     event_id VARCHAR(255) NOT NULL REFERENCES events(id) ON DELETE CASCADE,
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(incident_id, event_id),
-    INDEX idx_incident_events_incident (incident_id),
-    INDEX idx_incident_events_event (event_id)
+    UNIQUE(incident_id, event_id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_incident_events_incident ON incident_events(incident_id);
+CREATE INDEX IF NOT EXISTS idx_incident_events_event ON incident_events(event_id);
 
 -- Compliance Mappings (compliance flags per event)
 CREATE TABLE IF NOT EXISTS compliance_mappings (
@@ -127,10 +159,11 @@ CREATE TABLE IF NOT EXISTS compliance_mappings (
     nist_violations JSONB,
     ai_act_category VARCHAR(50),
     compliance_risk INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_compliance_event (event_id),
-    INDEX idx_compliance_risk (compliance_risk)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_compliance_event ON compliance_mappings(event_id);
+CREATE INDEX IF NOT EXISTS idx_compliance_risk ON compliance_mappings(compliance_risk);
 
 -- Compliance Evidence (links incidents to evidence)
 CREATE TABLE IF NOT EXISTS compliance_evidence (
@@ -138,9 +171,10 @@ CREATE TABLE IF NOT EXISTS compliance_evidence (
     incident_id VARCHAR(255) NOT NULL REFERENCES incidents(id) ON DELETE CASCADE,
     evidence_path VARCHAR(500),
     evidence_type VARCHAR(50),
-    collected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_evidence_incident (incident_id)
+    collected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_evidence_incident ON compliance_evidence(incident_id);
 
 -- Create indexes for common queries
 CREATE INDEX IF NOT EXISTS idx_events_workflow ON events(workflow_id) WHERE workflow_id IS NOT NULL;

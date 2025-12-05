@@ -115,16 +115,22 @@ class IncidentDB:
         """List incidents for a workspace."""
         pool = await self._get_pool()
         async with pool.acquire() as conn:
-            query = "SELECT * FROM incidents WHERE workspace_id = $1"
-            params = [workspace_id]
-            
             if status:
-                query += " AND status = $2"
-                params.append(status)
+                query = "SELECT * FROM incidents WHERE workspace_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT $3"
+                rows = await conn.fetch(query, workspace_id, status, limit)
+            else:
+                query = "SELECT * FROM incidents WHERE workspace_id = $1 ORDER BY created_at DESC LIMIT $2"
+                rows = await conn.fetch(query, workspace_id, limit)
             
-            query += " ORDER BY created_at DESC LIMIT $3"
-            params.append(limit)
+            incidents = []
+            for row in rows:
+                incident = dict(row)
+                if incident.get("timeline"):
+                    try:
+                        incident["timeline"] = json.loads(incident["timeline"])
+                    except:
+                        pass
+                incidents.append(incident)
             
-            rows = await conn.fetch(query, *params)
-            return [dict(row) for row in rows]
+            return incidents
 

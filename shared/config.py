@@ -38,6 +38,7 @@ class GuardianAgentConfig(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"  # Ignore extra fields from .env (like Backend config)
 
 
 class BackendConfig(BaseSettings):
@@ -67,4 +68,5 @@ class BackendConfig(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"  # Ignore extra fields from .env (like Guardian Agent config)
 

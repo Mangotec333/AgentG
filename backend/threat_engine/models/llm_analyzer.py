@@ -2,7 +2,7 @@
 LLM-based anomaly detection using multiple models.
 """
 import os
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple
 import sys
 import json
 import re
@@ -104,15 +104,20 @@ class LLMAnalyzer:
                 # Fallback to stable model
                 model = genai.GenerativeModel('gemini-1.5-flash')
             
-            # Generate content
-            response = await asyncio.to_thread(
-                model.generate_content,
-                prompt,
-                generation_config={
-                    "temperature": 0.3,
-                    "max_output_tokens": 500,
-                }
-            )
+            # Generate content (Python 3.8 compatible)
+            import concurrent.futures
+            loop = asyncio.get_event_loop()
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                response = await loop.run_in_executor(
+                    executor,
+                    lambda: model.generate_content(
+                        prompt,
+                        generation_config={
+                            "temperature": 0.3,
+                            "max_output_tokens": 500,
+                        }
+                    )
+                )
             
             # Parse response
             text = response.text if hasattr(response, 'text') else str(response)
@@ -187,7 +192,7 @@ Respond with:
 Format: RISK: <score> | REASONING: <explanation>
 """
     
-    def _parse_llm_response(self, text: str) -> tuple[int, str]:
+    def _parse_llm_response(self, text: str) -> Tuple[int, str]:
         """
         Parse LLM response to extract risk score and reasoning.
         

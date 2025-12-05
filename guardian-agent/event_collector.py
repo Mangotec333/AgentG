@@ -14,7 +14,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from shared.schemas.events import AgentEvent
 from shared.logger import guardian_logger
-from guardian_agent.config import config
+try:
+    from guardian_agent.config import config
+except ImportError:
+    # Fallback for direct execution
+    from config import config
 
 
 class EventCollector:

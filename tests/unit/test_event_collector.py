@@ -12,9 +12,16 @@ sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "guardian-agent"))
 
 try:
-    from event_collector import EventCollector
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "event_collector",
+        project_root / "guardian-agent" / "event_collector.py"
+    )
+    event_collector_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(event_collector_module)
+    EventCollector = event_collector_module.EventCollector
     EVENT_COLLECTOR_AVAILABLE = True
-except ImportError as e:
+except Exception as e:
     EVENT_COLLECTOR_AVAILABLE = False
     pytestmark = pytest.mark.skip(reason=f"Event collector import failed: {e}")
 

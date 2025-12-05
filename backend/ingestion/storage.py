@@ -4,6 +4,7 @@ Event storage - stores events in database and queues for threat engine.
 import asyncpg
 import json
 from typing import List, Dict, Any
+from datetime import datetime
 import sys
 import os
 
@@ -43,6 +44,16 @@ class EventStorage:
         async with pool.acquire() as conn:
             for event in events:
                 try:
+                    # Convert timestamp to datetime if it's a string
+                    timestamp = event.get("timestamp")
+                    if isinstance(timestamp, str):
+                        try:
+                            timestamp = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+                        except:
+                            timestamp = datetime.utcnow()
+                    elif timestamp is None:
+                        timestamp = datetime.utcnow()
+                    
                     await conn.execute(
                         """
                         INSERT INTO events (
@@ -62,7 +73,7 @@ class EventStorage:
                         event.get("raw", ""),
                         event.get("risk_local", 0),
                         event.get("event_hash"),
-                        event.get("timestamp")
+                        timestamp
                     )
                     stored_count += 1
                 

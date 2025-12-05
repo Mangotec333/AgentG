@@ -175,14 +175,20 @@ Format as JSON with keys: executive_summary, root_cause, recommended_fix, remedi
         except Exception:
             model = genai.GenerativeModel('gemini-1.5-flash')
         
-        response = await asyncio.to_thread(
-            model.generate_content,
-            prompt + "\n\nRespond with valid JSON only.",
-            generation_config={
-                "temperature": 0.3,
-                "max_output_tokens": 1500,
-            }
-        )
+        # Python 3.8 compatible async call
+        import concurrent.futures
+        loop = asyncio.get_event_loop()
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            response = await loop.run_in_executor(
+                executor,
+                lambda: model.generate_content(
+                    prompt + "\n\nRespond with valid JSON only.",
+                    generation_config={
+                        "temperature": 0.3,
+                        "max_output_tokens": 1500,
+                    }
+                )
+            )
         
         text = response.text if hasattr(response, 'text') else str(response)
         return self._parse_rca_response(text)
