@@ -1,0 +1,40 @@
+{
+  "patterns": [
+    {
+      "id": "NIST-001",
+      "category": "nist",
+      "pattern": "exec\\(|eval\\(|system\\(",
+      "severity": "critical",
+      "description": "Potential malicious code execution (SI-3)",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    },
+    {
+      "id": "NIST-002",
+      "category": "nist",
+      "pattern": "external|http://",
+      "severity": "high",
+      "description": "Boundary protection violation (SC-7)",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    },
+    {
+      "id": "NIST-003",
+      "category": "nist",
+      "pattern": "file_delete|user_delete",
+      "severity": "high",
+      "description": "High-risk tool without human oversight (AI-RMF-OVERSIGHT)",
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "match_count": 0
+      }
+    }
+  ],
+  "version": "1.0.0",
+  "last_updated": "2024-01-01T00:00:00Z"
+}
+

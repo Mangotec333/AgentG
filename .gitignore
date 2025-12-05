@@ -4,34 +4,14 @@ __pycache__/
 *$py.class
 *.so
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Testing
-.coverage
-.pytest_cache/
-.tox/
-htmlcov/
-.hypothesis/
-
-# Virtual environments
-venv/
 env/
+venv/
 ENV/
 .venv
+
+# Environment
+.env
+.env.local
 
 # IDE
 .vscode/
@@ -40,12 +20,35 @@ ENV/
 *.swo
 *~
 
+# Logs
+*.log
+logs/
+*.log.*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Reports
+reports/
+*.pdf
+
 # OS
 .DS_Store
 Thumbs.db
 
-# Project specific
-*.log
-.env
-.env.local
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+# Agent data
+guardian-agent/data/
+guardian-agent/logs/
 
